@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 
 @Entity
-@Table
+@Table(name="users")
 @Component
 public class Users {
     @Id

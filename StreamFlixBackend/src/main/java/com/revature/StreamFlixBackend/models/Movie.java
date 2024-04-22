@@ -1,6 +1,5 @@
-package com.revature.models;
+package com.revature.StreamFlixBackend.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.stereotype.Component;
 

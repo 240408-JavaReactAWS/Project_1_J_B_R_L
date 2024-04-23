@@ -41,7 +41,7 @@ public class MovieController {
         return new ResponseEntity<>(movies, HttpStatus.OK);
     }
 
-    @GetMapping("/movies/{id}")
+    @GetMapping("/getUser/{id}")
     public ResponseEntity<List<Movie>> getPurchasedMoviesById(@RequestHeader(name = "user", required = false) String username,
                                                           @PathVariable int id) {
         if (username == null || id <= 0) {
@@ -67,6 +67,12 @@ public class MovieController {
     @GetMapping()
     public ResponseEntity<List<Movie>> getAllMoviesHandler() {
         List<Movie> returnMovies = movieService.getAllMovies();
+        return ResponseEntity.ok(returnMovies);
+    }
+
+    @GetMapping("store")
+    public ResponseEntity<List<Movie>> getAllUnownedMoviesHandler(@RequestHeader(name = "user", required = false) String username) {
+        List<Movie> returnMovies = movieService.getUnownedMovies(username);
         return ResponseEntity.ok(returnMovies);
     }
 

@@ -1,7 +1,11 @@
 package com.revature.StreamFlixBackend.services;
 
 
+
 import com.revature.StreamFlixBackend.exceptions.UnauthorizedException;
+
+import com.revature.StreamFlixBackend.exceptions.UserNotFoundException;
+
 import com.revature.StreamFlixBackend.models.Users;
 import com.revature.StreamFlixBackend.exceptions.MovieNotFoundException;
 import com.revature.StreamFlixBackend.models.Movie;
@@ -58,6 +62,7 @@ public class MovieService {
         return movieDAO.findAll();
     }
 
+
     public Movie updateMovie(int movieId, Movie updatedMovie, Users currentUser) throws UnauthorizedException {
         if (!currentUser.isAdmin()) {
             throw new UnauthorizedException("Only admins can update movies.");
@@ -92,6 +97,11 @@ public class MovieService {
         } else {
             throw new MovieNotFoundException("Movie not found with id: " + movieId);
         }
+
+    public List<Movie> getUnownedMovies(String username) {
+        Users user = userDAO.findByUsername(username).orElseThrow(() -> new UserNotFoundException("This user doesn't exist!"));
+        return movieDAO.findDistinctByUserNotContaining(user).orElseThrow(() -> new MovieNotFoundException("You have all the movies!"));
+
     }
 }
 

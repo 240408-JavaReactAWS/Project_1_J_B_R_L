@@ -22,6 +22,17 @@ public class MovieController {
         this.movieService = movieService;
     }
 
+
+    @PostMapping
+    public ResponseEntity<Movie> createMovie(@RequestHeader(name = "user") String username, @RequestBody Movie movie) {
+        Movie addedMovie = movieService.addMovie(username, movie);
+        if (addedMovie == null) {
+            return ResponseEntity.status(400).build();
+        } else {
+            return ResponseEntity.status(201).body(addedMovie);
+        }
+    }
+
     @GetMapping("{id}")
     public ResponseEntity<Movie> getMovieByIdHandler(@PathVariable int id) {
         Movie returnMovie = movieService.getMovieById(id);

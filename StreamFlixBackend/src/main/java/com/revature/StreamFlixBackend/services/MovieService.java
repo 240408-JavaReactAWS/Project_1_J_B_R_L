@@ -1,7 +1,11 @@
 package com.revature.StreamFlixBackend.services;
 
 
+
+import com.revature.StreamFlixBackend.exceptions.UnauthorizedException;
+
 import com.revature.StreamFlixBackend.exceptions.UserNotFoundException;
+
 import com.revature.StreamFlixBackend.models.Users;
 import com.revature.StreamFlixBackend.exceptions.MovieNotFoundException;
 import com.revature.StreamFlixBackend.models.Movie;
@@ -58,8 +62,47 @@ public class MovieService {
         return movieDAO.findAll();
     }
 
+
+    public Movie updateMovie(int movieId, Movie updatedMovie, Users currentUser) throws UnauthorizedException {
+        if (!currentUser.isAdmin()) {
+            throw new UnauthorizedException("Only admins can update movies.");
+        }
+
+        Optional<Movie> existingMovie = movieDAO.findById(movieId);
+        if (existingMovie.isPresent()) {
+            Movie movie = existingMovie.get();
+            movie.setName(updatedMovie.getName());
+            movie.setPrice(updatedMovie.getPrice());
+            // Update other fields as needed
+
+            return movieDAO.save(movie);
+        } else {
+            throw new RuntimeException("Movie not found with id: " + movieId);
+        }
+    }
+
+    public boolean deleteMovie(int movieId, Users currentUser) throws UnauthorizedException, MovieNotFoundException {
+        if (!currentUser.isAdmin()) {
+            throw new UnauthorizedException("Only admins can delete movies.");
+        }
+
+        Optional<Movie> existingMovie = movieDAO.findById(movieId);
+        if (existingMovie.isPresent()) {
+            try {
+                movieDAO.delete(existingMovie.get());
+                return true; // Movie deleted successfully
+            } catch (Exception e) {
+                throw new RuntimeException("An error occurred while deleting the movie.", e);
+            }
+        } else {
+            throw new MovieNotFoundException("Movie not found with id: " + movieId);
+        }
+
     public List<Movie> getUnownedMovies(String username) {
         Users user = userDAO.findByUsername(username).orElseThrow(() -> new UserNotFoundException("This user doesn't exist!"));
         return movieDAO.findDistinctByUserNotContaining(user).orElseThrow(() -> new MovieNotFoundException("You have all the movies!"));
+
     }
 }
+
+

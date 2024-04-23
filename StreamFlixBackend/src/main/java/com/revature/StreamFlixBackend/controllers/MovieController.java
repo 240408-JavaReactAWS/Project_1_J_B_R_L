@@ -1,13 +1,18 @@
 package com.revature.StreamFlixBackend.controllers;
 
+import com.revature.StreamFlixBackend.exceptions.UnauthorizedException;
 import com.revature.StreamFlixBackend.models.Users;
 import com.revature.StreamFlixBackend.exceptions.MovieNotFoundException;
 import com.revature.StreamFlixBackend.models.Movie;
 import com.revature.StreamFlixBackend.services.MovieService;
+import com.revature.StreamFlixBackend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+
 import java.util.List;
 
 @RestController
@@ -18,8 +23,13 @@ public class MovieController {
     private final MovieService movieService;
 
     @Autowired
-    public MovieController(MovieService movieService) {
+    private UserService userService;
+
+
+    @Autowired
+    public MovieController(MovieService movieService, UserService userService) {
         this.movieService = movieService;
+        this.userService = userService;
     }
 
     @GetMapping("{id}")
@@ -46,9 +56,33 @@ public class MovieController {
     {
         return e.getMessage();
     }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateMovie(@PathVariable int id, @RequestBody Movie updatedMovie, @RequestHeader(name = "user") String username) {
+        try {
+            Users currentUser = userService.findByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            Movie movie = movieService.updateMovie(id, updatedMovie, currentUser);
+            return ResponseEntity.ok(movie);
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
 
-
-
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteMovie(@PathVariable int id, @RequestHeader(name = "user") String username) {
+        try {
+            Users currentUser = userService.findByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            boolean deleted = movieService.deleteMovie(id, currentUser);
+            return deleted ? ResponseEntity.ok("Movie deleted successfully") : ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete the movie");
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (MovieNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while deleting the movie.");
+        }
+    }
 
 
 

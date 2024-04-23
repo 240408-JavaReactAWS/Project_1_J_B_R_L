@@ -1,10 +1,11 @@
 package com.revature.StreamFlixBackend.controllers;
 
 import com.revature.StreamFlixBackend.models.Users;
-import com.revature.StreamFlixBackend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.revature.StreamFlixBackend.services.UserService;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/users")
@@ -12,6 +13,8 @@ public class UserController {
     UserService userService;
 
     @Autowired
+    private final UserService userService;
+
     public UserController(UserService userService) {
         this.userService = userService;
     }
@@ -25,4 +28,5 @@ public class UserController {
             return ResponseEntity.status(400).build();
         }
     }
+
 }

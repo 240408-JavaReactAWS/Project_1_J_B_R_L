@@ -31,29 +31,6 @@ public class MovieService {
         this.userDAO = userDAO;
     }
 
-    public List<Movie> getMoviesByUsername(String username) {
-        Optional<Users> user = userDAO.findByUsername(username);
-        if (user.isEmpty()) {
-            throw new NoSuchElementException("No user was found");
-        }
-        return movieDAO.getMoviesByUser(user.get());
-    }
-
-    public List<Movie> getMoviesByUserId(String username, int id) {
-        Optional<Users> user = userDAO.findByUsername(username);
-        if (user.isEmpty()) {
-            throw new NoSuchElementException("Username not found");
-        }
-        if (!user.get().isAdmin()) {
-            throw new IllegalArgumentException("User is not admin");
-        }
-        Optional<Users> getUser = userDAO.findById(id);
-        if (getUser.isEmpty()) {
-            throw new NoSuchElementException("User id was not found");
-        }
-        return movieDAO.getMoviesByUser(getUser.get());
-    }
-
     public Movie getMovieById(int id) throws MovieNotFoundException {
         return movieDAO.findById(id).orElseThrow(() -> new MovieNotFoundException("Movie not found!"));
     }

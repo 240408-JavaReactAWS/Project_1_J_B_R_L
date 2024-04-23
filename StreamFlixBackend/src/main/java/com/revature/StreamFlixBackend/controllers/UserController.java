@@ -1,5 +1,7 @@
 package com.revature.StreamFlixBackend.controllers;
 
+import com.revature.StreamFlixBackend.exceptions.InvalidPasswordException;
+import com.revature.StreamFlixBackend.exceptions.NotAuthorizedException;
 import com.revature.StreamFlixBackend.models.Movie;
 import com.revature.StreamFlixBackend.services.MovieService;
 
@@ -33,15 +35,28 @@ public class UserController {
         if (user.getUsername() == null || user.getPassword() == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        try {
-            loginUser = userService.loginUser(user.getUsername(), user.getPassword());
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        loginUser = userService.loginUser(user.getUsername(), user.getPassword());
         return new ResponseEntity<>(loginUser, HttpStatus.OK);
     }
 
+    @GetMapping("/movies")
+    public ResponseEntity<List<Movie>> getPurchasedMovies(@RequestHeader(name = "user", required = false) String username) {
+        if (username == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        List<Movie> movies = userService.getMoviesByUsername(username);
+        return new ResponseEntity<>(movies, HttpStatus.OK);
+    }
 
+    @GetMapping("/movies/{id}")
+    public ResponseEntity<List<Movie>> getPurchasedMoviesById(@RequestHeader(name = "user", required = false) String username,
+                                                              @PathVariable int id) {
+        if (username == null || id <= 0) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        List<Movie> movies = userService.getMoviesByUserId(username, id);
+        return new ResponseEntity<>(movies, HttpStatus.OK);
+    }
 
 
     @PatchMapping(value = "/users/{id}")
@@ -70,6 +85,18 @@ public class UserController {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public @ResponseBody String handleUserAlreadyExists(UserAlreadyExistsException e)
     {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(InvalidPasswordException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody String handleInvalidPasswordException(InvalidPasswordException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(NotAuthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public @ResponseBody String handleNotAuthorizedException(NotAuthorizedException e) {
         return e.getMessage();
     }
 }

@@ -9,10 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/movies")
 @ResponseBody
 public class MovieController {
-    private MovieService movieService;
+    private final MovieService movieService;
 
     @Autowired
     public MovieController(MovieService movieService) {

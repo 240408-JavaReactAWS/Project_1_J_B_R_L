@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/users")
 @ResponseBody
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
     public UserController(UserService userService) {
@@ -22,7 +22,7 @@ public class UserController {
 
     @PostMapping("register")
     public ResponseEntity<Users> registerUserHandler(@RequestBody Users user) {
-        return new ResponseEntity<Users>(userService.registerUser(user), HttpStatus.CREATED);
+        return new ResponseEntity<>(userService.registerUser(user), HttpStatus.CREATED);
     }
 
     @ExceptionHandler(InvalidRegistrationException.class)

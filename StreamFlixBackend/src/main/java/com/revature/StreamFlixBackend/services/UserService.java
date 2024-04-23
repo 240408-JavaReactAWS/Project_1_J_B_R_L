@@ -42,6 +42,12 @@ public class UserService {
         }
     }
 
+    public Optional<Users> findByUsername(String username) {
+        return userDAO.findByUsername(username);
+    }
+
+
+
 
     public Users registerUser(Users user) throws InvalidRegistrationException, UserAlreadyExistsException {
         String username = user.getUsername();

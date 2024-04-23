@@ -1,8 +1,10 @@
 package com.revature.StreamFlixBackend.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -15,13 +17,13 @@ public class Movie {
     private String name;
     private double price;
 
-//    @ManyToMany
-//    @JoinTable(
-//            name="orders",
-//            joinColumns = {@JoinColumn(name = "movie_id")},
-//            inverseJoinColumns = {@JoinColumn(name="user_id")})
-//    @JsonIgnore
-//    private User user;
+    @ManyToMany
+    @JoinTable(
+            name="orders",
+            joinColumns = {@JoinColumn(name = "movie_id")},
+            inverseJoinColumns = {@JoinColumn(name="user_id")})
+    @JsonIgnore
+    private List<Users> user;
 
     public Movie() {
     }

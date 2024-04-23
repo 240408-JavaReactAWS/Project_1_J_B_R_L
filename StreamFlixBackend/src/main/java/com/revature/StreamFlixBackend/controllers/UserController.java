@@ -1,5 +1,6 @@
 package com.revature.StreamFlixBackend.controllers;
 
+
 import com.revature.StreamFlixBackend.exceptions.InvalidRegistrationException;
 import com.revature.StreamFlixBackend.exceptions.UserAlreadyExistsException;
 import com.revature.StreamFlixBackend.models.Users;
@@ -13,7 +14,24 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("users")
 @ResponseBody
 public class UserController {
+
+    @Autowired
     private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @PatchMapping(value = "/users/{id}")
+    public ResponseEntity<Users> resetPassword(@PathVariable int id, @RequestBody Users user) {
+        Users updatedUser = userService.resetUserPassword(id, user);
+        if (updatedUser != null) {
+            return ResponseEntity.ok().body(updatedUser);
+        } else {
+            return ResponseEntity.status(400).build();
+        }
+    }
+
 
     @Autowired
     public UserController(UserService userService) {

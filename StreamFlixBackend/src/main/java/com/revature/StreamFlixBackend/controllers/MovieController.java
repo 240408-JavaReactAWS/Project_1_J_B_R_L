@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -24,6 +22,7 @@ public class MovieController {
         this.movieService = movieService;
     }
 
+
     @PostMapping
     public ResponseEntity<Movie> createMovie(@RequestHeader(name = "user") String username, @RequestBody Movie movie) {
         Movie addedMovie = movieService.addMovie(username, movie);
@@ -32,39 +31,6 @@ public class MovieController {
         } else {
             return ResponseEntity.status(201).body(addedMovie);
         }
-    }
-
-    @GetMapping("/myMovies")
-    public ResponseEntity<List<Movie>> getPurchasedMovies(@RequestHeader(name = "user", required = false) String username) {
-        if (username == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        List<Movie> movies = new ArrayList<Movie>();
-
-        try {
-            movies = movieService.getMoviesByUsername(username);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        return new ResponseEntity<>(movies, HttpStatus.OK);
-    }
-
-    @GetMapping("/movies/{id}")
-    public ResponseEntity<List<Movie>> getPurchasedMoviesById(@RequestHeader(name = "user", required = false) String username,
-                                                          @PathVariable int id) {
-        if (username == null || id <= 0) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        List<Movie> movies = new ArrayList<Movie>();
-
-        try {
-            movies = movieService.getMoviesByUserId(username, id);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        return new ResponseEntity<>(movies, HttpStatus.OK);
     }
 
     @GetMapping("{id}")
@@ -79,12 +45,22 @@ public class MovieController {
         return ResponseEntity.ok(returnMovies);
     }
 
+    @GetMapping("store")
+    public ResponseEntity<List<Movie>> getAllUnownedMoviesHandler(@RequestHeader(name = "user", required = false) String username) {
+        List<Movie> returnMovies = movieService.getUnownedMovies(username);
+        return ResponseEntity.ok(returnMovies);
+    }
+
     @ExceptionHandler(MovieNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public @ResponseBody String handleMessageNotFound(MovieNotFoundException e)
     {
         return e.getMessage();
     }
+
+
+
+
 
 
 }

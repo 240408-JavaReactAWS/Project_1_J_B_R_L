@@ -1,9 +1,11 @@
 package com.revature.StreamFlixBackend.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -11,7 +13,6 @@ import java.util.Objects;
 @Component
 public class Users {
     @Id
-    @Column(name = "userId")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int userId;
     @Column(unique = true, nullable = false)
@@ -27,6 +28,26 @@ public class Users {
     private double balance;
     @Column(nullable = false)
     private boolean isAdmin;
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public List<Movie> getMovies() {
+        return movies;
+    }
+
+    public void setMovies(List<Movie> movies) {
+        this.movies = movies;
+    }
+
+    @ManyToMany
+    @JoinTable(
+            name="orders",
+            joinColumns = {@JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name="movie_id")})
+    @JsonIgnore
+    private List<Movie> movies;
 
     public Users() {
 

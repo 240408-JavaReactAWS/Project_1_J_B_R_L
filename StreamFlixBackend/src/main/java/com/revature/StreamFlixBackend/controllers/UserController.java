@@ -1,12 +1,9 @@
 package com.revature.StreamFlixBackend.controllers;
 
-import com.revature.StreamFlixBackend.exceptions.InvalidPasswordException;
-import com.revature.StreamFlixBackend.exceptions.NotAuthorizedException;
+import com.revature.StreamFlixBackend.exceptions.*;
 import com.revature.StreamFlixBackend.models.Movie;
 import com.revature.StreamFlixBackend.services.MovieService;
 
-import com.revature.StreamFlixBackend.exceptions.InvalidRegistrationException;
-import com.revature.StreamFlixBackend.exceptions.UserAlreadyExistsException;
 import com.revature.StreamFlixBackend.models.Users;
 import com.revature.StreamFlixBackend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,9 +91,9 @@ public class UserController {
         return e.getMessage();
     }
 
-    @ExceptionHandler(NotAuthorizedException.class)
+    @ExceptionHandler(UnauthorizedException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public @ResponseBody String handleNotAuthorizedException(NotAuthorizedException e) {
+    public @ResponseBody String handleNotAuthorizedException(UnauthorizedException e) {
         return e.getMessage();
     }
 }

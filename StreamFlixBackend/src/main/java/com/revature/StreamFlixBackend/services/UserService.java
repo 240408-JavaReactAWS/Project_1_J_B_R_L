@@ -80,13 +80,13 @@ public class UserService {
         return movieDAO.getMoviesByUser(user.get());
     }
 
-    public List<Movie> getMoviesByUserId(String username, int id) throws UserNotFoundException, NotAuthorizedException{
+    public List<Movie> getMoviesByUserId(String username, int id) throws UserNotFoundException, UnauthorizedException{
         Optional<Users> user = userDAO.findByUsername(username);
         if (user.isEmpty()) {
             throw new UserNotFoundException("Username not found");
         }
         if (!user.get().isAdmin()) {
-            throw new NotAuthorizedException("User is not admin");
+            throw new UnauthorizedException("User is not admin");
         }
         Optional<Users> getUser = userDAO.findById(id);
         if (getUser.isEmpty()) {

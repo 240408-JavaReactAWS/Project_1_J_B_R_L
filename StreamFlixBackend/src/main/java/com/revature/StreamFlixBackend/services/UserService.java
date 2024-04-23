@@ -1,11 +1,10 @@
 package com.revature.StreamFlixBackend.services;
 
 
+import com.revature.StreamFlixBackend.exceptions.*;
 import com.revature.StreamFlixBackend.models.Movie;
 import com.revature.StreamFlixBackend.repos.MovieDAO;
 
-import com.revature.StreamFlixBackend.exceptions.InvalidRegistrationException;
-import com.revature.StreamFlixBackend.exceptions.UserAlreadyExistsException;
 import com.revature.StreamFlixBackend.models.Users;
 
 import com.revature.StreamFlixBackend.repos.UserDAO;
@@ -21,23 +20,25 @@ import java.util.Optional;
 @Service
 public class UserService {
     private final UserDAO userDAO;
+    private final MovieDAO movieDAO;
 
     @Autowired
-    public UserService(UserDAO userDAO) {
+    public UserService(UserDAO userDAO, MovieDAO movieDAO) {
         this.userDAO = userDAO;
+        this.movieDAO = movieDAO;
     }
 
 
-    public Users loginUser(String username, String password) {
+    public Users loginUser(String username, String password) throws UserNotFoundException, InvalidPasswordException {
         Optional<Users> loginUser = userDAO.findByUsername(username);
 
         if (loginUser.isEmpty()) {
-            throw new NoSuchElementException("No user was found");
+            throw new UserNotFoundException("No user was found");
         }
         if (loginUser.get().getPassword().equals(password)) {
             return loginUser.get();
         } else {
-            throw new IllegalArgumentException("Wrong Password");
+            throw new InvalidPasswordException("Wrong Password");
         }
     }
 
@@ -69,6 +70,29 @@ public class UserService {
         }
         currentUser.setPassword(newPassword);
         return userDAO.save(currentUser);
+    }
+
+    public List<Movie> getMoviesByUsername(String username) throws UserNotFoundException {
+        Optional<Users> user = userDAO.findByUsername(username);
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("No user was found");
+        }
+        return movieDAO.getMoviesByUser(user.get());
+    }
+
+    public List<Movie> getMoviesByUserId(String username, int id) throws UserNotFoundException, NotAuthorizedException{
+        Optional<Users> user = userDAO.findByUsername(username);
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("Username not found");
+        }
+        if (!user.get().isAdmin()) {
+            throw new NotAuthorizedException("User is not admin");
+        }
+        Optional<Users> getUser = userDAO.findById(id);
+        if (getUser.isEmpty()) {
+            throw new UserNotFoundException("User id was not found");
+        }
+        return movieDAO.getMoviesByUser(getUser.get());
     }
 
 }

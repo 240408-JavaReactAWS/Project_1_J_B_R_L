@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("movies")
 @ResponseBody
@@ -23,6 +25,12 @@ public class MovieController {
     public ResponseEntity<Movie> getMovieByIdHandler(@PathVariable int id) {
         Movie returnMovie = movieService.getMovieById(id);
         return ResponseEntity.ok(returnMovie);
+    }
+
+    @GetMapping()
+    public ResponseEntity<List<Movie>> getAllMoviesHandler() {
+        List<Movie> returnMovies = movieService.getAllMovies();
+        return ResponseEntity.ok(returnMovies);
     }
 
     @ExceptionHandler(MovieNotFoundException.class)

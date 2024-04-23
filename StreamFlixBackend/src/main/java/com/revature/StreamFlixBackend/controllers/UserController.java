@@ -32,12 +32,6 @@ public class UserController {
         }
     }
 
-
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
-
     @PostMapping("register")
     public ResponseEntity<Users> registerUserHandler(@RequestBody Users user) {
         return new ResponseEntity<>(userService.registerUser(user), HttpStatus.CREATED);

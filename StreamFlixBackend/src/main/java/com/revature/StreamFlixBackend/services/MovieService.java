@@ -1,7 +1,9 @@
 package com.revature.StreamFlixBackend.services;
 
-import com.revature.StreamFlixBackend.models.Movie;
+
 import com.revature.StreamFlixBackend.models.Users;
+import com.revature.StreamFlixBackend.exceptions.MovieNotFoundException;
+import com.revature.StreamFlixBackend.models.Movie;
 import com.revature.StreamFlixBackend.repos.MovieDAO;
 import com.revature.StreamFlixBackend.repos.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,9 @@ import java.util.Optional;
 @Service
 public class MovieService {
     private final MovieDAO movieDAO;
+
     private final UserDAO userDAO;
+
 
     @Autowired
     public MovieService(MovieDAO movieDAO, UserDAO userDAO) {
@@ -43,5 +47,13 @@ public class MovieService {
             throw new NoSuchElementException("User id was not found");
         }
         return movieDAO.getMoviesByUser(getUser.get());
+    }
+
+    public Movie getMovieById(int id) throws MovieNotFoundException {
+        return movieDAO.findById(id).orElseThrow(() -> new MovieNotFoundException("Movie not found!"));
+    }
+
+    public List<Movie> getAllMovies() {
+        return movieDAO.findAll();
     }
 }

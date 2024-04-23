@@ -24,6 +24,15 @@ public class MovieController {
         this.movieService = movieService;
     }
 
+    @PostMapping
+    public ResponseEntity<Movie> createMovie(@RequestHeader(name = "user") String username, @RequestBody Movie movie) {
+        Movie addedMovie = movieService.addMovie(username, movie);
+        if (addedMovie == null) {
+            return ResponseEntity.status(400).build();
+        } else {
+            return ResponseEntity.status(201).body(addedMovie);
+        }
+    }
 
     @GetMapping("/myMovies")
     public ResponseEntity<List<Movie>> getPurchasedMovies(@RequestHeader(name = "user", required = false) String username) {

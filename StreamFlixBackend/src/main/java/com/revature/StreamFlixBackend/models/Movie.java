@@ -16,6 +16,8 @@ public class Movie {
     int movieId;
     private String name;
     private double price;
+    private String url;
+    private String description;
 
     @ManyToMany
     @JoinTable(
@@ -52,17 +54,33 @@ public class Movie {
         this.price = price;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Movie movie = (Movie) o;
-        return movieId == movie.movieId && Double.compare(price, movie.price) == 0 && Objects.equals(name, movie.name);
+        return movieId == movie.movieId && Double.compare(price, movie.price) == 0 && Objects.equals(name, movie.name) && Objects.equals(url, movie.url);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(movieId, name, price);
+        return Objects.hash(movieId, name, price, url);
     }
 
     @Override
@@ -70,7 +88,8 @@ public class Movie {
         return "Movie{" +
                 "movieId=" + movieId +
                 ", name='" + name + '\'' +
-                ", price=" + price +
+                ", price=" + price + '\'' +
+                ", url=" + url +
                 '}';
     }
 }

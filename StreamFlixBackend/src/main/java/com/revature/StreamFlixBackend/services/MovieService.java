@@ -16,7 +16,6 @@ import java.util.Optional;
 @Service
 public class MovieService {
     private final MovieDAO movieDAO;
-
     private final UserDAO userDAO;
 
 
@@ -24,6 +23,30 @@ public class MovieService {
     public MovieService(MovieDAO movieDAO, UserDAO userDAO) {
         this.movieDAO = movieDAO;
         this.userDAO = userDAO;
+    }
+
+    public Movie addMovie(String username, Movie movie) {
+        Optional<Users> adminOpt = userDAO.findByUsername(username);
+        if(adminOpt.isEmpty()) {
+            return null;
+        }
+        Users admin = adminOpt.get();
+        if(!admin.isAdmin()) {
+            return null;
+        }
+        if (movie.getName() == null || movie.getName().isEmpty()) {
+            return null;
+        }
+        if (movie.getPrice() < 0.00) {
+            return null;
+        }
+        if (movie.getUrl() == null || movie.getUrl().isEmpty()) {
+            return null;
+        }
+        if (movie.getDescription() == null) {
+            movie.setDescription("");
+        }
+        return movieDAO.save(movie);
     }
 
     public List<Movie> getMoviesByUsername(String username) {

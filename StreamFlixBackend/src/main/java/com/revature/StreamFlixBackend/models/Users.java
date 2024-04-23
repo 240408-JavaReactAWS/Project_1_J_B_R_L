@@ -1,6 +1,7 @@
 package com.revature.StreamFlixBackend.models;
 
 import jakarta.persistence.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -22,6 +23,7 @@ public class Users {
     @Column(unique = true, nullable = false)
     private String email;
     @Column(nullable = false)
+    @Value("0")
     private double balance;
     @Column(nullable = false)
     private boolean isAdmin;

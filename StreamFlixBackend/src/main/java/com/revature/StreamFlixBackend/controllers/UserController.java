@@ -1,20 +1,32 @@
 package com.revature.StreamFlixBackend.controllers;
 
-import com.revature.StreamFlixBackend.services.UserService;
-import org.apache.catalina.User;
+import com.revature.StreamFlixBackend.models.Users;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import com.revature.StreamFlixBackend.services.UserService;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
+    UserService userService;
 
+    @Autowired
     private final UserService userService;
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @PatchMapping(value = "/users/{id}")
+    public ResponseEntity<Users> resetPassword(@PathVariable int id, @RequestBody Users user) {
+        Users updatedUser = userService.resetUserPassword(id, user);
+        if (updatedUser != null) {
+            return ResponseEntity.ok().body(updatedUser);
+        } else {
+            return ResponseEntity.status(400).build();
+        }
     }
 
 }

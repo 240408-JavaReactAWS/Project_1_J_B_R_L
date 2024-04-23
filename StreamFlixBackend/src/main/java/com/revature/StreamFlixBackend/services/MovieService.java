@@ -97,6 +97,7 @@ public class MovieService {
         } else {
             throw new MovieNotFoundException("Movie not found with id: " + movieId);
         }
+    }
 
     public List<Movie> getUnownedMovies(String username) {
         Users user = userDAO.findByUsername(username).orElseThrow(() -> new UserNotFoundException("This user doesn't exist!"));

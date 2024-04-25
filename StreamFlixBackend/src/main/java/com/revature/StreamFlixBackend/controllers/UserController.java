@@ -56,7 +56,7 @@ public class UserController {
     }
 
 
-    @PatchMapping(value = "/users/{id}")
+    @PatchMapping(value = "{id}")
     public ResponseEntity<Users> resetPassword(@PathVariable int id, @RequestBody Users user) {
         Users updatedUser = userService.resetUserPassword(id, user);
         if (updatedUser != null) {
@@ -64,6 +64,12 @@ public class UserController {
         } else {
             return ResponseEntity.status(400).build();
         }
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Users>> getAllUsers() {
+        List<Users> users = userService.getAllUsers();
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
     @PostMapping("register")

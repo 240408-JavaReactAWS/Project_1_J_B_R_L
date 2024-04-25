@@ -109,7 +109,7 @@ public class MovieService {
     }
     ///random
 
-    public Movie buyMovie(String username, int id) {
+    public Movie buyMovie(String username, int id) throws UserNotFoundException, MovieNotFoundException, InsufficientFundsException {
         Users user = userDAO.findByUsername(username).orElseThrow(() -> new UserNotFoundException("This user doesn't exist!"));
         Movie movie = movieDAO.findById(id).orElseThrow(() -> new MovieNotFoundException("Movie not found with id:" + id));
         List<Movie> list = user.getMovies();

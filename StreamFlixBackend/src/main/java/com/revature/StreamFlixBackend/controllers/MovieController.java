@@ -95,6 +95,10 @@ public class MovieController {
         }
     }
 
+    @PostMapping("/buy/{id}")
+    public ResponseEntity<Movie> buyMovie(@RequestHeader(name="user") String username, @PathVariable int id) {
+        return new ResponseEntity<>(movieService.buyMovie(username, id), HttpStatus.OK);
+    }
 
 
 }

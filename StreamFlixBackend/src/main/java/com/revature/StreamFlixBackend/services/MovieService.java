@@ -2,6 +2,7 @@ package com.revature.StreamFlixBackend.services;
 
 
 
+import com.revature.StreamFlixBackend.exceptions.InsufficientFundsException;
 import com.revature.StreamFlixBackend.exceptions.UnauthorizedException;
 
 import com.revature.StreamFlixBackend.exceptions.UserNotFoundException;
@@ -107,6 +108,22 @@ public class MovieService {
 
     }
     ///random
+
+    public Movie buyMovie(String username, int id) {
+        Users user = userDAO.findByUsername(username).orElseThrow(() -> new UserNotFoundException("This user doesn't exist!"));
+        Movie movie = movieDAO.findById(id).orElseThrow(() -> new MovieNotFoundException("Movie not found with id:" + id));
+        List<Movie> list = user.getMovies();
+        list.add(movie);
+        user.setMovies(list);
+        double balance = user.getBalance();
+        if (balance - movie.getPrice() < 0) {
+            throw new InsufficientFundsException("Insufficient Funds");
+        }
+        balance -= movie.getPrice();
+        user.setBalance(balance);
+        userDAO.save(user);
+        return movie;
+    }
 }
 
 

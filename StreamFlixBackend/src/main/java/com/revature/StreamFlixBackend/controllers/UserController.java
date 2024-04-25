@@ -96,4 +96,10 @@ public class UserController {
     public @ResponseBody String handleNotAuthorizedException(UnauthorizedException e) {
         return e.getMessage();
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody String handleUserNotFoundException(UserNotFoundException e) {
+        return e.getMessage();
+    }
 }

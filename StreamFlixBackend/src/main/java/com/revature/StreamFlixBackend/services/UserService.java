@@ -63,16 +63,21 @@ public class UserService {
         else return userDAO.save(user);
     }
 
+    //Returns a list of all users
+    public List<Users> getAllUsers() {
+        return userDAO.findAll();
+    }
+
     //Users can reset their passwords
-    public Users resetUserPassword(int userId, Users user) {
+    public Users resetUserPassword(int userId, Users user) throws UserNotFoundException, InvalidPasswordException {
         Optional<Users> currentUserOpt = userDAO.findById(userId);
         if (currentUserOpt.isEmpty()){
-            return null;
+            throw new UserNotFoundException("User not found");
         }
         Users currentUser = currentUserOpt.get();
         String newPassword = user.getPassword();
         if (newPassword.isBlank() || newPassword.length() < 4) {
-            return null;
+            throw new InvalidPasswordException("Password must be at least 4 characters");
         }
         currentUser.setPassword(newPassword);
         return userDAO.save(currentUser);

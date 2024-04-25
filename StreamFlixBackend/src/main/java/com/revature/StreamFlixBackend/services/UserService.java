@@ -8,14 +8,13 @@ import com.revature.StreamFlixBackend.repos.MovieDAO;
 import com.revature.StreamFlixBackend.models.Users;
 
 import com.revature.StreamFlixBackend.repos.UserDAO;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Service
 public class UserService {
@@ -52,12 +51,18 @@ public class UserService {
     public Users registerUser(Users user) throws InvalidRegistrationException, UserAlreadyExistsException {
         String username = user.getUsername();
         String password = user.getPassword();
+        String email = user.getEmail();
         if (username == null || password == null)
             throw new InvalidRegistrationException("Unable to register new user:" +
                     username + ". Username and password must be specified.");
         else if (username.length() < 4 || password.length() < 4)
             throw new InvalidRegistrationException("Unable to register new user:" +
                     username + ". Username and password must be at least four characters.");
+        else if (!Pattern.compile("^(.+)@(.+)$").matcher(email).matches())
+            throw new InvalidRegistrationException("Unable to register new user:" +
+                    username + ". Email must be valid.");
+        else if (userDAO.findByEmail(email).isPresent())
+            throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists!");
         else if (userDAO.findByUsername(username).isPresent())
             throw new UserAlreadyExistsException("User " + username + " already exists!");
         else return userDAO.save(user);

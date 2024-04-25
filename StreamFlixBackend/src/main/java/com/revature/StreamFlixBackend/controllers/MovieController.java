@@ -1,6 +1,8 @@
 package com.revature.StreamFlixBackend.controllers;
 
+import com.revature.StreamFlixBackend.exceptions.InsufficientFundsException;
 import com.revature.StreamFlixBackend.exceptions.UnauthorizedException;
+import com.revature.StreamFlixBackend.exceptions.UserNotFoundException;
 import com.revature.StreamFlixBackend.models.Users;
 import com.revature.StreamFlixBackend.exceptions.MovieNotFoundException;
 import com.revature.StreamFlixBackend.models.Movie;
@@ -100,5 +102,22 @@ public class MovieController {
         return new ResponseEntity<>(movieService.buyMovie(username, id), HttpStatus.OK);
     }
 
+    @ExceptionHandler(InsufficientFundsException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody String handleInsufficientFundsException(InsufficientFundsException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody String handleUserNotFoundException(UserNotFoundException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(MovieNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody String handleMovieNotFoundException(MovieNotFoundException e) {
+        return e.getMessage();
+    }
 
 }

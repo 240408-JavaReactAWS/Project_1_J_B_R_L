@@ -17,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("users")
 @ResponseBody
+@CrossOrigin(origins = {"http://localhost:3000"})
 public class UserController {
 
     @Autowired
@@ -36,7 +37,7 @@ public class UserController {
         return new ResponseEntity<>(loginUser, HttpStatus.OK);
     }
 
-    @GetMapping("/movies")
+    @GetMapping("/myMovies")
     public ResponseEntity<List<Movie>> getPurchasedMovies(@RequestHeader(name = "user", required = false) String username) {
         if (username == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

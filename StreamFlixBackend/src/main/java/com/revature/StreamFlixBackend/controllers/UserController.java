@@ -67,6 +67,17 @@ public class UserController {
         }
     }
 
+    @PatchMapping("addMoney")
+    public ResponseEntity<Users> addMoneyHandler(@RequestHeader(name = "user") String username, @RequestBody Integer amount) {
+        Users updatedUser = userService.addMoney(username, amount);
+        if (updatedUser != null) {
+            return ResponseEntity.ok().body(updatedUser);
+        } else {
+            return ResponseEntity.status(400).build();
+        }
+    }
+
+
     @PostMapping("register")
     public ResponseEntity<Users> registerUserHandler(@RequestBody Users user) {
         return new ResponseEntity<>(userService.registerUser(user), HttpStatus.CREATED);

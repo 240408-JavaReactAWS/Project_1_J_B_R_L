@@ -1,10 +1,7 @@
 package com.revature.StreamFlixBackend.controllers;
 
-import com.revature.StreamFlixBackend.exceptions.InsufficientFundsException;
-import com.revature.StreamFlixBackend.exceptions.UnauthorizedException;
-import com.revature.StreamFlixBackend.exceptions.UserNotFoundException;
+import com.revature.StreamFlixBackend.exceptions.*;
 import com.revature.StreamFlixBackend.models.Users;
-import com.revature.StreamFlixBackend.exceptions.MovieNotFoundException;
 import com.revature.StreamFlixBackend.models.Movie;
 import com.revature.StreamFlixBackend.services.MovieService;
 import com.revature.StreamFlixBackend.services.UserService;
@@ -103,7 +100,7 @@ public class MovieController {
     }
 
     @ExceptionHandler(InsufficientFundsException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.PAYMENT_REQUIRED)
     public @ResponseBody String handleInsufficientFundsException(InsufficientFundsException e) {
         return e.getMessage();
     }
@@ -114,10 +111,16 @@ public class MovieController {
         return e.getMessage();
     }
 
-    @ExceptionHandler(MovieNotFoundException.class)
+    @ExceptionHandler(AlreadyOwnedException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public @ResponseBody String handleMovieNotFoundException(MovieNotFoundException e) {
+    public @ResponseBody String handleAlreadyOwnedException(AlreadyOwnedException e) {
         return e.getMessage();
     }
+
+//    @ExceptionHandler(MovieNotFoundException.class)
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    public @ResponseBody String handleMovieNotFoundException(MovieNotFoundException e) {
+//        return e.getMessage();
+//    }
 
 }

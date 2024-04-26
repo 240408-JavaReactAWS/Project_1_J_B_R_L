@@ -2,13 +2,9 @@ package com.revature.StreamFlixBackend.services;
 
 
 
-import com.revature.StreamFlixBackend.exceptions.InsufficientFundsException;
-import com.revature.StreamFlixBackend.exceptions.UnauthorizedException;
-
-import com.revature.StreamFlixBackend.exceptions.UserNotFoundException;
+import com.revature.StreamFlixBackend.exceptions.*;
 
 import com.revature.StreamFlixBackend.models.Users;
-import com.revature.StreamFlixBackend.exceptions.MovieNotFoundException;
 import com.revature.StreamFlixBackend.models.Movie;
 import com.revature.StreamFlixBackend.repos.MovieDAO;
 import com.revature.StreamFlixBackend.repos.UserDAO;
@@ -113,6 +109,9 @@ public class MovieService {
         Users user = userDAO.findByUsername(username).orElseThrow(() -> new UserNotFoundException("This user doesn't exist!"));
         Movie movie = movieDAO.findById(id).orElseThrow(() -> new MovieNotFoundException("Movie not found with id:" + id));
         List<Movie> list = user.getMovies();
+        if (list.contains(movie)) {
+            throw new AlreadyOwnedException("The user already owns this movie.");
+        }
         list.add(movie);
         user.setMovies(list);
         double balance = user.getBalance();

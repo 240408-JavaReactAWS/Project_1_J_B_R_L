@@ -68,6 +68,17 @@ public class UserController {
         }
     }
 
+    @PatchMapping("addMoney")
+    public ResponseEntity<Users> addMoneyHandler(@RequestHeader(name = "user") String username, @RequestBody Integer amount) {
+        Users updatedUser = userService.addMoney(username, amount);
+        if (updatedUser != null) {
+            return ResponseEntity.ok().body(updatedUser);
+        } else {
+            return ResponseEntity.status(400).build();
+        }
+    }
+
+
     @GetMapping
     public ResponseEntity<List<Users>> getAllUsers() {
         List<Users> users = userService.getAllUsers();

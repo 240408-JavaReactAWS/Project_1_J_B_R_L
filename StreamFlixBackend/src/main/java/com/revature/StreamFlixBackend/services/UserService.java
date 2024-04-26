@@ -111,4 +111,12 @@ public class UserService {
         return movieDAO.getMoviesByUser(getUser.get());
     }
 
+    public Users addMoney(String username, int amount) {
+        Users currentUser = userDAO.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found"));
+        if (amount < 0) {
+            return null;
+        }
+        currentUser.setBalance(currentUser.getBalance() + amount);
+        return userDAO.save(currentUser);
+    }
 }

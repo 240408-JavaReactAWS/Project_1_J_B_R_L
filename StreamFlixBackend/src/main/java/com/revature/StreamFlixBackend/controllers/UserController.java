@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("users")
 @ResponseBody
 @CrossOrigin(origins = {"http://localhost:3000"})
@@ -57,7 +58,7 @@ public class UserController {
     }
 
 
-    @PatchMapping(value = "/users/{id}")
+    @PatchMapping(value = "{id}")
     public ResponseEntity<Users> resetPassword(@PathVariable int id, @RequestBody Users user) {
         Users updatedUser = userService.resetUserPassword(id, user);
         if (updatedUser != null) {
@@ -77,6 +78,12 @@ public class UserController {
         }
     }
 
+
+    @GetMapping
+    public ResponseEntity<List<Users>> getAllUsers() {
+        List<Users> users = userService.getAllUsers();
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
 
     @PostMapping("register")
     public ResponseEntity<Users> registerUserHandler(@RequestBody Users user) {
@@ -106,6 +113,12 @@ public class UserController {
     @ExceptionHandler(UnauthorizedException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public @ResponseBody String handleNotAuthorizedException(UnauthorizedException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody String handleUserNotFoundException(UserNotFoundException e) {
         return e.getMessage();
     }
 }

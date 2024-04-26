@@ -2,12 +2,9 @@ package com.revature.StreamFlixBackend.services;
 
 
 
-import com.revature.StreamFlixBackend.exceptions.UnauthorizedException;
-
-import com.revature.StreamFlixBackend.exceptions.UserNotFoundException;
+import com.revature.StreamFlixBackend.exceptions.*;
 
 import com.revature.StreamFlixBackend.models.Users;
-import com.revature.StreamFlixBackend.exceptions.MovieNotFoundException;
 import com.revature.StreamFlixBackend.models.Movie;
 import com.revature.StreamFlixBackend.repos.MovieDAO;
 import com.revature.StreamFlixBackend.repos.UserDAO;
@@ -73,6 +70,8 @@ public class MovieService {
             Movie movie = existingMovie.get();
             movie.setName(updatedMovie.getName());
             movie.setPrice(updatedMovie.getPrice());
+            movie.setUrl(updatedMovie.getUrl()); // Update url
+            movie.setDescription(updatedMovie.getDescription()); // Update description
             // Update other fields as needed
 
             return movieDAO.save(movie);
@@ -105,6 +104,25 @@ public class MovieService {
 
     }
     ///random
+
+    public Movie buyMovie(String username, int id) throws UserNotFoundException, MovieNotFoundException, InsufficientFundsException {
+        Users user = userDAO.findByUsername(username).orElseThrow(() -> new UserNotFoundException("This user doesn't exist!"));
+        Movie movie = movieDAO.findById(id).orElseThrow(() -> new MovieNotFoundException("Movie not found with id:" + id));
+        List<Movie> list = user.getMovies();
+        if (list.contains(movie)) {
+            throw new AlreadyOwnedException("The user already owns this movie.");
+        }
+        list.add(movie);
+        user.setMovies(list);
+        double balance = user.getBalance();
+        if (balance - movie.getPrice() < 0) {
+            throw new InsufficientFundsException("Insufficient Funds");
+        }
+        balance -= movie.getPrice();
+        user.setBalance(balance);
+        userDAO.save(user);
+        return movie;
+    }
 }
 
 

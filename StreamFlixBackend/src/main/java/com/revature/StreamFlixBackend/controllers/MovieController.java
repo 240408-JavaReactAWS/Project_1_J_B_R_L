@@ -1,8 +1,7 @@
 package com.revature.StreamFlixBackend.controllers;
 
-import com.revature.StreamFlixBackend.exceptions.UnauthorizedException;
+import com.revature.StreamFlixBackend.exceptions.*;
 import com.revature.StreamFlixBackend.models.Users;
-import com.revature.StreamFlixBackend.exceptions.MovieNotFoundException;
 import com.revature.StreamFlixBackend.models.Movie;
 import com.revature.StreamFlixBackend.services.MovieService;
 import com.revature.StreamFlixBackend.services.UserService;
@@ -14,7 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 import java.util.List;
-
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("movies")
 @ResponseBody
@@ -96,6 +95,33 @@ public class MovieController {
         }
     }
 
+    @PostMapping("/buy/{id}")
+    public ResponseEntity<Movie> buyMovie(@RequestHeader(name="user") String username, @PathVariable int id) {
+        return new ResponseEntity<>(movieService.buyMovie(username, id), HttpStatus.OK);
+    }
 
+    @ExceptionHandler(InsufficientFundsException.class)
+    @ResponseStatus(HttpStatus.PAYMENT_REQUIRED)
+    public @ResponseBody String handleInsufficientFundsException(InsufficientFundsException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody String handleUserNotFoundException(UserNotFoundException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(AlreadyOwnedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody String handleAlreadyOwnedException(AlreadyOwnedException e) {
+        return e.getMessage();
+    }
+
+//    @ExceptionHandler(MovieNotFoundException.class)
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    public @ResponseBody String handleMovieNotFoundException(MovieNotFoundException e) {
+//        return e.getMessage();
+//    }
 
 }

@@ -5,6 +5,7 @@ import com.revature.StreamFlixBackend.models.Users;
 import com.revature.StreamFlixBackend.models.Movie;
 import com.revature.StreamFlixBackend.services.MovieService;
 import com.revature.StreamFlixBackend.services.UserService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +18,9 @@ import java.util.List;
 @RestController
 @RequestMapping("movies")
 @ResponseBody
-@CrossOrigin(origins = {"http://localhost:3000"})
 public class MovieController {
   
     private final MovieService movieService;
-
-    @Autowired
     private UserService userService;
 
 
@@ -34,13 +32,18 @@ public class MovieController {
 
 
     @PostMapping
-    public ResponseEntity<Movie> createMovie(@RequestHeader(name = "user") String username, @RequestBody Movie movie) {
-        Movie addedMovie = movieService.addMovie(username, movie);
-        if (addedMovie == null) {
-            return ResponseEntity.status(400).build();
-        } else {
-            return ResponseEntity.status(201).body(addedMovie);
+    public ResponseEntity<Movie> createMovie(HttpSession session, @RequestBody Movie movie) {
+        Movie addedMovie;
+        try {
+            Users admin = (Users) session.getAttribute("user");
+            if (admin == null || !admin.isAdmin()) {
+                throw new UnauthorizedException("You are not authorized to add a movie");
+            }
+            addedMovie = movieService.addMovie(movie);
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        return ResponseEntity.status(201).body(addedMovie);
     }
 
     @GetMapping("{id}")
@@ -50,14 +53,22 @@ public class MovieController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<Movie>> getAllMoviesHandler() {
+    public ResponseEntity<List<Movie>> getAllMoviesHandler(HttpSession session) {
+        Users user = (Users) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         List<Movie> returnMovies = movieService.getAllMovies();
         return ResponseEntity.ok(returnMovies);
     }
 
     @GetMapping("store")
-    public ResponseEntity<List<Movie>> getAllUnownedMoviesHandler(@RequestHeader(name = "user", required = false) String username) {
-        List<Movie> returnMovies = movieService.getUnownedMovies(username);
+    public ResponseEntity<List<Movie>> getAllUnownedMoviesHandler(HttpSession session) {
+        Users user = (Users) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        List<Movie> returnMovies = movieService.getUnownedMovies(user.getUsername());
         return ResponseEntity.ok(returnMovies);
     }
 
@@ -68,10 +79,14 @@ public class MovieController {
         return e.getMessage();
     }
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateMovie(@PathVariable int id, @RequestBody Movie updatedMovie, @RequestHeader(name = "user") String username) {
+    public ResponseEntity<?> updateMovie(@PathVariable int id, @RequestBody Movie updatedMovie, HttpSession session) {
         try {
-            Users currentUser = userService.findByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-            Movie movie = movieService.updateMovie(id, updatedMovie, currentUser);
+            Users admin = (Users) session.getAttribute("user");
+            if (admin == null || !admin.isAdmin()) {
+                throw new UnauthorizedException("You are not authorized to update a movie");
+            }
+            //Users currentUser = userService.findByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            Movie movie = movieService.updateMovie(id, updatedMovie, admin);
             return ResponseEntity.ok(movie);
         } catch (UnauthorizedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
@@ -81,10 +96,14 @@ public class MovieController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteMovie(@PathVariable int id, @RequestHeader(name = "user") String username) {
+    public ResponseEntity<?> deleteMovie(@PathVariable int id, HttpSession session) {
         try {
-            Users currentUser = userService.findByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-            boolean deleted = movieService.deleteMovie(id, currentUser);
+            Users admin = (Users) session.getAttribute("user");
+            if (admin == null || !admin.isAdmin()) {
+                throw new UnauthorizedException("You are not authorized to delete a movie");
+            }
+            //Users currentUser = userService.findByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            boolean deleted = movieService.deleteMovie(id, admin);
             return deleted ? ResponseEntity.ok("Movie deleted successfully") : ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete the movie");
         } catch (UnauthorizedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
@@ -96,8 +115,14 @@ public class MovieController {
     }
 
     @PostMapping("/buy/{id}")
-    public ResponseEntity<Movie> buyMovie(@RequestHeader(name="user") String username, @PathVariable int id) {
-        return new ResponseEntity<>(movieService.buyMovie(username, id), HttpStatus.OK);
+    public ResponseEntity<Movie> buyMovie(HttpSession session, @PathVariable int id) {
+        Users user = (Users) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Movie movie = movieService.buyMovie(user.getUsername(), id);
+        session.setAttribute("user", userService.findByUsername(user.getUsername()));
+        return new ResponseEntity<>(movie, HttpStatus.OK);
     }
 
     @ExceptionHandler(InsufficientFundsException.class)
@@ -116,6 +141,13 @@ public class MovieController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody String handleAlreadyOwnedException(AlreadyOwnedException e) {
         return e.getMessage();
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public @ResponseBody String handleUnauthorizedException(UnauthorizedException e) {
+        return e.getMessage();
+
     }
 
 //    @ExceptionHandler(MovieNotFoundException.class)

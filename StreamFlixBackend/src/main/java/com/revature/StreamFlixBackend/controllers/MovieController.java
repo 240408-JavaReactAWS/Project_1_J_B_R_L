@@ -14,7 +14,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 import java.util.List;
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000",
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH,RequestMethod.PUT, RequestMethod.DELETE},
+        allowCredentials = "true")
 @RestController
 @RequestMapping("movies")
 @ResponseBody

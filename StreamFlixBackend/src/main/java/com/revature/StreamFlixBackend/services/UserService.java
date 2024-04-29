@@ -87,10 +87,10 @@ public class UserService {
     }
 
     //Users can reset their passwords
-    public Users resetPassword(Users userPatch) throws UserNotFoundException, InvalidPasswordException {;
-        Optional<Users> userOpt = userDAO.findByEmail(userPatch.getEmail());
+    public Users resetPassword(Users currentUser, Users userPatch) throws UserNotFoundException, InvalidPasswordException {;
+        Optional<Users> userOpt = userDAO.findByUsername(currentUser.getUsername());
         if (userOpt.isEmpty()) {
-            throw new UserNotFoundException("User not found");
+            throw new UnauthorizedException("No such user found");
         }
         if (userPatch.getPassword().length() < 4) {
             throw new InvalidPasswordException("Password must be at least 4 characters");

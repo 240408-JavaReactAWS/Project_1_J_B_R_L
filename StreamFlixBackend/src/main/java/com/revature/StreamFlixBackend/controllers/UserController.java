@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000",
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH,RequestMethod.PUT, RequestMethod.DELETE},
+        allowCredentials = "true")
 @RequestMapping("users")
 @ResponseBody
 public class UserController {
@@ -91,7 +93,6 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 //        Users user = userService.getUserById(id);
-//        Users user = userService.getUserById(id);
 //        if (user == null || id <= 0) {
 //            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 //        }
@@ -122,29 +123,33 @@ public class UserController {
     }
 
     //Reset password using Http sessions and email service
-    @GetMapping(value = "{email}/verify-email/{otp}")
-    public ResponseEntity<Users> verifyEmail(@PathVariable int otp, @PathVariable String email) {
+    @PostMapping(value = "{email}/verify-email/{otp}")
+    public ResponseEntity<?> verifyEmail(@PathVariable String email, @PathVariable int otp, HttpSession session) {
         Users verifiedUser;
         try {
             verifiedUser = userService.verifyEmail(otp, email);
         } catch (InvalidOTPException | UserNotFoundException | OTPExpirationException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
         if (verifiedUser == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         } else {
+            session.setAttribute("user", verifiedUser);
             return new ResponseEntity<>(verifiedUser, HttpStatus.OK);
         }
     }
 
     @PatchMapping("reset-password")
-    public ResponseEntity<Users> resetPassword(@RequestBody Users user, HttpSession session) {
+    public ResponseEntity<?> resetPassword(@RequestBody Users user, HttpSession session) {
         Users updatedUser;
         try {
-            updatedUser = userService.resetPassword(user);
+            Users currentUser = (Users) session.getAttribute("user");
+            updatedUser = userService.resetPassword(currentUser, user);
             session.setAttribute("user", updatedUser);
         } catch (InvalidPasswordException | UserNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+        } catch (UnauthorizedException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         }
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }

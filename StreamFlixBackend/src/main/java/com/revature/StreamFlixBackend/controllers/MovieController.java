@@ -123,7 +123,7 @@ public class MovieController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         Movie movie = movieService.buyMovie(user.getUsername(), id);
-        session.setAttribute("user", userService.findByUsername(user.getUsername()));
+        session.setAttribute("user", userService.findByUsername(user.getUsername()).orElseThrow(()->new UserNotFoundException("User not found")));
         return new ResponseEntity<>(movie, HttpStatus.OK);
     }
 

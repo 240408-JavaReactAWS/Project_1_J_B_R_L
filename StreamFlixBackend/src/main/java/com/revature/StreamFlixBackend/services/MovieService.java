@@ -27,15 +27,16 @@ public class MovieService {
         this.userDAO = userDAO;
     }
 
-    public Movie addMovie(String username, Movie movie) {
-        Optional<Users> adminOpt = userDAO.findByUsername(username);
-        if(adminOpt.isEmpty()) {
-            return null;
-        }
-        Users admin = adminOpt.get();
-        if(!admin.isAdmin()) {
-            return null;
-        }
+    public Movie addMovie(Movie movie) {
+//        Optional<Users> adminOpt = userDAO.findByUsername(username);
+//        if(adminOpt.isEmpty()) {
+//            return null;
+//        }
+//        Users admin = adminOpt.get();
+//        if(!admin.isAdmin()) {
+//            return null;
+//        }
+
         if (movie.getName() == null || movie.getName().isEmpty()) {
             return null;
         }

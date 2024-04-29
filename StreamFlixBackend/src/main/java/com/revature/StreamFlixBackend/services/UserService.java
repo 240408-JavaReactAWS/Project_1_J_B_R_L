@@ -3,10 +3,12 @@ package com.revature.StreamFlixBackend.services;
 
 import com.revature.StreamFlixBackend.exceptions.*;
 import com.revature.StreamFlixBackend.models.Movie;
+import com.revature.StreamFlixBackend.models.OneTimePassword;
 import com.revature.StreamFlixBackend.repos.MovieDAO;
 
 import com.revature.StreamFlixBackend.models.Users;
 
+import com.revature.StreamFlixBackend.repos.OneTimePasswordDAO;
 import com.revature.StreamFlixBackend.repos.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,11 +22,14 @@ import java.util.regex.Pattern;
 public class UserService {
     private final UserDAO userDAO;
     private final MovieDAO movieDAO;
+    private final OneTimePasswordDAO oneTimePasswordDAO;
+
 
     @Autowired
-    public UserService(UserDAO userDAO, MovieDAO movieDAO) {
+    public UserService(UserDAO userDAO, MovieDAO movieDAO, OneTimePasswordDAO oneTimePasswordDAO) {
         this.userDAO = userDAO;
         this.movieDAO = movieDAO;
+        this.oneTimePasswordDAO = oneTimePasswordDAO;
     }
 
 
@@ -45,8 +50,9 @@ public class UserService {
         return userDAO.findByUsername(username);
     }
 
-
-
+    public Users getUserByEmail(String email) {
+        return userDAO.findByEmail(email).orElse(null);
+    }
 
     public Users registerUser(Users user) throws InvalidRegistrationException, UserAlreadyExistsException {
         String username = user.getUsername();
@@ -73,21 +79,32 @@ public class UserService {
         return userDAO.findAll();
     }
 
-    //Users can reset their passwords
-    public Users resetUserPassword(int userId, Users user) throws UserNotFoundException, InvalidPasswordException {
-        Optional<Users> currentUserOpt = userDAO.findById(userId);
-        if (currentUserOpt.isEmpty()){
-            throw new UserNotFoundException("User not found");
-        }
-        Users currentUser = currentUserOpt.get();
-        String newPassword = user.getPassword();
-        if (newPassword.isBlank() || newPassword.length() < 4) {
-            throw new InvalidPasswordException("Password must be at least 4 characters");
-        }
-        currentUser.setPassword(newPassword);
-        return userDAO.save(currentUser);
+    //Stores an otp in the database
+    public void saveOTP(OneTimePassword otp) {
+        Optional<OneTimePassword> otpRecord = oneTimePasswordDAO.findByUser(otp.getUser());
+        otpRecord.ifPresent(oneTimePasswordDAO::delete);
+        oneTimePasswordDAO.save(otp);
     }
 
+    //Users can reset their passwords
+    public Users resetPassword(Users currentUser, Users userPatch) throws UserNotFoundException, InvalidPasswordException {;
+        Optional<Users> userOpt = userDAO.findByUsername(currentUser.getUsername());
+        if (userOpt.isEmpty()) {
+            throw new UnauthorizedException("No such user found");
+        }
+        if (userPatch.getPassword().length() < 4) {
+            throw new InvalidPasswordException("Password must be at least 4 characters");
+        }
+        Users user = userOpt.get();
+        user.setPassword(userPatch.getPassword());
+        return userDAO.save(user);
+    }
+
+    public List<Movie> getMoviesByUser(Users user) {
+        return movieDAO.getMoviesByUser(user);
+    }
+
+    //Depreciated method
     public List<Movie> getMoviesByUsername(String username) throws UserNotFoundException {
         Optional<Users> user = userDAO.findByUsername(username);
         if (user.isEmpty()) {
@@ -96,14 +113,15 @@ public class UserService {
         return movieDAO.getMoviesByUser(user.get());
     }
 
-    public List<Movie> getMoviesByUserId(String username, int id) throws UserNotFoundException, UnauthorizedException{
-        Optional<Users> user = userDAO.findByUsername(username);
-        if (user.isEmpty()) {
-            throw new UserNotFoundException("Username not found");
-        }
-        if (!user.get().isAdmin()) {
-            throw new UnauthorizedException("User is not admin");
-        }
+
+    public List<Movie> getMoviesByUserId(int id) throws UserNotFoundException, UnauthorizedException{
+//        Optional<Users> user = userDAO.findByUsername(username);
+//        if (user.isEmpty()) {
+//            throw new UserNotFoundException("Username not found");
+//        }
+//        if (!user.get().isAdmin()) {
+//            throw new UnauthorizedException("User is not admin");
+//        }
         Optional<Users> getUser = userDAO.findById(id);
         if (getUser.isEmpty()) {
             throw new UserNotFoundException("User id was not found");
@@ -111,12 +129,29 @@ public class UserService {
         return movieDAO.getMoviesByUser(getUser.get());
     }
 
-    public Users addMoney(String username, int amount) {
+    public Users addMoney(String username, double amount) {
         Users currentUser = userDAO.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found"));
-        if (amount < 0) {
+        if (amount < 0.0) {
             return null;
         }
         currentUser.setBalance(currentUser.getBalance() + amount);
         return userDAO.save(currentUser);
+    }
+
+    public Users verifyEmail(int otp, String email) {
+        Users user = userDAO.findByEmail(email).orElse(null);
+        if (user == null) {
+            throw new UserNotFoundException("User not found");
+        }
+        OneTimePassword otpRecord = oneTimePasswordDAO.findByUserAndOtp(user, otp).orElse(null);
+        if (otpRecord == null) {
+            throw new InvalidOTPException("Invalid OTP");
+        }
+        if (otpRecord.getExpirationDate().before(new java.util.Date())) {
+            oneTimePasswordDAO.delete(otpRecord);
+            throw new OTPExpirationException("OTP has expired");
+        }
+        oneTimePasswordDAO.delete(otpRecord);
+        return user;
     }
 }

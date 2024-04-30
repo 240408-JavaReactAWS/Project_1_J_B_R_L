@@ -70,7 +70,7 @@ public class UserController {
     }
 
     @PostMapping("logout")
-    public ResponseEntity<Users> logoutUser(HttpSession session) {
+    public ResponseEntity<Void> logoutUser(HttpSession session) {
         session.removeAttribute("user");
         session.invalidate();
         return new ResponseEntity<>(HttpStatus.OK);

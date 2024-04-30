@@ -25,10 +25,13 @@ public class Movie {
     /* price is the price of the movie */
     private double price;
     /* url is the url of the movie */
+    @Column(length = 3000)
     private String url;
     /* snapshot is the Thumbnail of the movie */
+    @Column(length = 3000)
     private String snapshot;
     /* description is the description of the movie */
+    @Column(length = 3000)   
     private String description;
 
     /* user is the list of users that have ordered the movie */

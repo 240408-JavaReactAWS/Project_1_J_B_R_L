@@ -163,7 +163,7 @@ public class UserController {
         userService.saveOTP(otpRecord);
         String message = "Your OTP is: " + otp + " and it will expire in 100 seconds." + "\n" +
                             "Please go to the following link to reset your password: " +
-                            "http://localhost:3000/reset-password?email=" + email;
+                            "http://localhost:3000/users/reset-password/otp/" + email;
         emailService.sendEmail(email, "StreamFlix Password Reset [Time Sensitive]", message);
 
         return new ResponseEntity<>("You should be receiving an email soon", HttpStatus.OK);
@@ -206,9 +206,9 @@ public class UserController {
             updatedUser = userService.resetPassword(currentUser, user);
             session.setAttribute("user", updatedUser);
         } catch (InvalidPasswordException | UserNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (UnauthorizedException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }

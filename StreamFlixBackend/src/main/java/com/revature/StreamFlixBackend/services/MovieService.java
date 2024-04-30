@@ -37,17 +37,24 @@ public class MovieService {
 //            return null;
 //        }
 
-        if (movie.getName() == null || movie.getName().isEmpty()) {
-            return null;
+        if (movie.getName() == null || movie.getName().isEmpty() || movie.getName().length() > 255) {
+            throw new InvalidMovieException("Invalid movie name");
         }
         if (movie.getPrice() < 0.00) {
-            return null;
+            throw new InvalidMovieException("Invalid movie price");
         }
-        if (movie.getUrl() == null || movie.getUrl().isEmpty()) {
-            return null;
+        if (movie.getUrl() == null || movie.getUrl().isEmpty() || movie.getUrl().length() > 255) {
+            throw new InvalidMovieException("Invalid movie url");
+        }
+        if (movie.getSnapshot() == null ) {
+            movie.setSnapshot("");
+        } else if (movie.getSnapshot().length() > 255) {
+            throw new InvalidMovieException("The Movie's Snapshot URL is too long. Please enter a shorter one.");
         }
         if (movie.getDescription() == null) {
             movie.setDescription("");
+        } else if (movie.getDescription().length() > 255) {
+            throw new InvalidMovieException("Movie description is too long. Please enter a shorter one.");
         }
         return movieDAO.save(movie);
     }

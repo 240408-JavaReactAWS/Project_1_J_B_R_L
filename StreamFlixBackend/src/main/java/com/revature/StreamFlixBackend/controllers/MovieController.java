@@ -34,7 +34,7 @@ public class MovieController {
 
 
     @PostMapping
-    public ResponseEntity<Movie> createMovie(HttpSession session, @RequestBody Movie movie) {
+    public ResponseEntity<?> createMovie(HttpSession session, @RequestBody Movie movie) {
         Movie addedMovie;
         try {
             Users admin = (Users) session.getAttribute("user");
@@ -43,7 +43,9 @@ public class MovieController {
             }
             addedMovie = movieService.addMovie(movie);
         } catch (UnauthorizedException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (InvalidMovieException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
         return ResponseEntity.status(201).body(addedMovie);
     }

@@ -17,6 +17,7 @@ public class Movie {
     private String name;
     private double price;
     private String url;
+    private String snapshot;
     private String description;
 
     @ManyToMany
@@ -60,6 +61,14 @@ public class Movie {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getSnapshot() {
+        return snapshot;
+    }
+
+    public void setSnapshot(String snapshot) {
+        this.snapshot = snapshot;
     }
 
     public String getDescription() {

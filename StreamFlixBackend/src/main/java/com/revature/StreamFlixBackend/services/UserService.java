@@ -94,7 +94,7 @@ public class UserService {
         if (userOpt.isEmpty()) {
             throw new UnauthorizedException("No such user found");
         }
-        if (userPatch.getPassword().length() < 4) {
+        if (userPatch.getPassword().isEmpty() || userPatch.getPassword().length() < 4) {
             throw new InvalidPasswordException("Password must be at least 4 characters");
         }
         Users user = userOpt.get();

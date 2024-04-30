@@ -100,7 +100,7 @@ public class UserController {
         return new ResponseEntity<>(movies, HttpStatus.OK);
     }
 
-    @PostMapping("{email}/forgot-password")
+    @PostMapping("{email}/forgotPassword")
     public ResponseEntity<String> forgotPassword(@PathVariable String email) {
         Users user;
         try {
@@ -123,7 +123,7 @@ public class UserController {
     }
 
     //Reset password using Http sessions and email service
-    @PostMapping(value = "{email}/verify-email/{otp}")
+    @PostMapping(value = "{email}/verifyEmail/{otp}")
     public ResponseEntity<?> verifyEmail(@PathVariable String email, @PathVariable int otp, HttpSession session) {
         Users verifiedUser;
         try {
@@ -139,7 +139,7 @@ public class UserController {
         }
     }
 
-    @PatchMapping("reset-password")
+    @PatchMapping("resetPassword")
     public ResponseEntity<?> resetPassword(@RequestBody Users user, HttpSession session) {
         Users updatedUser;
         try {
@@ -152,6 +152,21 @@ public class UserController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         }
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+    }
+
+    @PatchMapping("admin/setAdmin/{id}")
+    public ResponseEntity<?> setAdmin(@PathVariable int id, HttpSession session) {
+        Users admin = (Users) session.getAttribute("user");
+        if (admin == null || !admin.isAdmin()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You are not authorized to set an admin");
+        }
+        Users user;
+        try {
+            user = userService.setAdmin(id);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
 

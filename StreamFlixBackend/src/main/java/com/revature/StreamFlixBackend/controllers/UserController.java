@@ -200,18 +200,21 @@ public class UserController {
     @PostMapping("register")
     public ResponseEntity<Users> registerUserHandler(@RequestBody Users user, HttpSession session) {
         Users newUser;
-        try {
-            newUser = userService.registerUser(user);
-            session.setAttribute("user", newUser);
-        } catch (InvalidRegistrationException | UserAlreadyExistsException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        newUser = userService.registerUser(user);
+        session.setAttribute("user", newUser);
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
     @ExceptionHandler(InvalidRegistrationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody String handleInvalidRegistration(InvalidRegistrationException e)
+    {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody String handleInsufficientFundsException(InsufficientFundsException e)
     {
         return e.getMessage();
     }

@@ -197,6 +197,13 @@ public class UserController {
         return e.getMessage();
     }
 
+    @ExceptionHandler(InsufficientFundsException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody String handleInsufficientFundsException(InsufficientFundsException e)
+    {
+        return e.getMessage();
+    }
+
     @ExceptionHandler(UserAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public @ResponseBody String handleUserAlreadyExists(UserAlreadyExistsException e)

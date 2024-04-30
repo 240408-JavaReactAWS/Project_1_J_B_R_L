@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
+import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -58,7 +60,7 @@ public class UserService {
         if (loginUser.isEmpty()) {
             throw new UserNotFoundException("No user was found");
         }
-        if (loginUser.get().getPassword().equals(password)) {
+        if (validatePassword(password, loginUser.get())) {
             return loginUser.get();
         } else {
             throw new InvalidPasswordException("Wrong Password");
@@ -106,7 +108,77 @@ public class UserService {
             throw new UserAlreadyExistsException("User " + username + " already exists!");
         else if (user.getName().isEmpty())
             throw new InvalidRegistrationException("Name must be specified");
-        else return userDAO.save(user);
+        try {
+            byte[] salt = new byte[2];
+            SecureRandom.getInstanceStrong().nextBytes(salt);
+            user.setSalt(salt);
+            user.setPassword(getHashedPassword(password, salt));
+//            byte[] passwordBytes = password.getBytes();
+//            // Concatenate the passwordBytes and salt
+//            byte[] saltedPassword = new byte[salt.length + passwordBytes.length];
+//            System.arraycopy(passwordBytes, 0, saltedPassword, 0, passwordBytes.length);
+//            System.arraycopy(salt, 0, saltedPassword, passwordBytes.length, salt.length);
+//
+//
+//            MessageDigest md = MessageDigest.getInstance("SHA-256");
+//            byte[] hash = md.digest(saltedPassword);
+//            user.setPassword(bytesToHex(hash));
+        } catch (Exception e) {
+            throw new InvalidRegistrationException("Unable to register new user:" +
+                    username);
+        }
+        return userDAO.save(user);
+    }
+
+    /*
+     * Validates a user's password
+     * @param password the password to validate
+     * @param user the user to validate the password for
+     */
+    private static Boolean validatePassword(String password, Users user) {
+        byte[] salt = user.getSalt();
+        byte[] passwordBytes = password.getBytes();
+        byte[] saltedPassword = new byte[salt.length + passwordBytes.length];
+        System.arraycopy(passwordBytes, 0, saltedPassword, 0, passwordBytes.length);
+        System.arraycopy(salt, 0, saltedPassword, passwordBytes.length, salt.length);
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(saltedPassword);
+            return user.getPassword().equals(bytesToHex(hash));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static String getHashedPassword(String password, byte[] salt) {
+        byte[] passwordBytes = password.getBytes();
+        byte[] saltedPassword = new byte[salt.length + passwordBytes.length];
+        System.arraycopy(passwordBytes, 0, saltedPassword, 0, passwordBytes.length);
+        System.arraycopy(salt, 0, saltedPassword, passwordBytes.length, salt.length);
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(saltedPassword);
+            return bytesToHex(hash);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /*
+     * Converts a byte array to a hex string
+     * @param hash the byte array to convert
+     * @return the hex string
+     */
+    private static String bytesToHex(byte[] hash) {
+        StringBuilder hexString = new StringBuilder(2 * hash.length);
+        for (int i = 0; i < hash.length; i++) {
+            String hex = Integer.toHexString(0xff & hash[i]);
+            if(hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 
     /*
@@ -142,7 +214,7 @@ public class UserService {
             throw new InvalidPasswordException("Password must be at least 4 characters");
         }
         Users user = userOpt.get();
-        user.setPassword(userPatch.getPassword());
+        user.setPassword(getHashedPassword(userPatch.getPassword(), user.getSalt()));
         return userDAO.save(user);
     }
 

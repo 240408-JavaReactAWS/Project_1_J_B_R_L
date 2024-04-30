@@ -39,6 +39,24 @@ public class Users {
     /* isAdmin is a boolean that determines if the user is an admin */
     @Column(nullable = false)
     private boolean isAdmin;
+    @Column
+    private byte[] salt;
+
+    /*
+     * Gets the salt
+     * @return the salt
+     */
+    public byte[] getSalt() {
+        return salt;
+    }
+
+    /*
+     * Sets the salt
+     * @param salt the salt to set
+     */
+    public void setSalt(byte[] salt) {
+        this.salt = salt;
+    }
 
     /*
      * Sets the userId

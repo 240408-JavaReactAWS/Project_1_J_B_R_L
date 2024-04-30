@@ -71,6 +71,8 @@ public class UserService {
             throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists!");
         else if (userDAO.findByUsername(username).isPresent())
             throw new UserAlreadyExistsException("User " + username + " already exists!");
+        else if (user.getName().isEmpty())
+            throw new InvalidRegistrationException("Name must be specified");
         else return userDAO.save(user);
     }
 
@@ -132,7 +134,7 @@ public class UserService {
     public Users addMoney(String username, double amount) {
         Users currentUser = userDAO.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found"));
         if (amount < 0.0) {
-            return null;
+            throw new InsufficientFundsException("Amount must be positive");
         }
         currentUser.setBalance(currentUser.getBalance() + amount);
         return userDAO.save(currentUser);

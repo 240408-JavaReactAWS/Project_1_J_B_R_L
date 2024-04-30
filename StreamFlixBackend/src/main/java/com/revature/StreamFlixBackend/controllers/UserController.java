@@ -185,12 +185,8 @@ public class UserController {
     @PostMapping("register")
     public ResponseEntity<Users> registerUserHandler(@RequestBody Users user, HttpSession session) {
         Users newUser;
-        try {
-            newUser = userService.registerUser(user);
-            session.setAttribute("user", newUser);
-        } catch (InvalidRegistrationException | UserAlreadyExistsException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        newUser = userService.registerUser(user);
+        session.setAttribute("user", newUser);
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 

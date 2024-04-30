@@ -154,4 +154,14 @@ public class UserService {
         oneTimePasswordDAO.delete(otpRecord);
         return user;
     }
+
+    public Users setAdmin(int id) {
+        Optional<Users> user = userDAO.findById(id);
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("User not found");
+        }
+        Users userToChange = user.get();
+        userToChange.setAdmin(true);
+        return userDAO.save(userToChange);
+    }
 }

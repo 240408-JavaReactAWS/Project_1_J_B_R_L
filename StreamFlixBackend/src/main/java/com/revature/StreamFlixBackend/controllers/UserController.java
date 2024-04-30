@@ -13,9 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
+/*
+ * This class is a RestController that handles all the endpoints related to the User entity.
+ * It uses the UserService to interact with the database and perform the necessary operations.
+ * It also uses the EmailService to send emails to users.
+ * @Author: Ryan Sherk, Luis Garcia, Jeff Gomez, Brian Bollivar
+ */
 @RestController
 @CrossOrigin(origins = "http://localhost:3000",
         methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH,RequestMethod.PUT, RequestMethod.DELETE},
@@ -25,15 +30,25 @@ import java.util.List;
 public class UserController {
 
 
+    /* The UserService object that will be used to interact with the database */
     private final UserService userService;
+    /* The EmailService object that will be used to send emails */
     private final EmailService emailService;
 
+    /*
+     * This constructor is used to inject the UserService and EmailService objects into the UserController
+     */
     @Autowired
     public UserController(UserService userService, EmailService emailService) {
         this.userService = userService;
         this.emailService = emailService;
     }
-  
+
+    /*
+     * This method is used to handle the login of a user.
+     * It takes in a Users object and a HttpSession object.
+     * @Return ResponseEntity<Users> - The user that was logged in
+     */
     @PostMapping("login")
     public ResponseEntity<Users> loginUser(@RequestBody Users user, HttpSession session) {
         Users loginUser;
@@ -49,6 +64,11 @@ public class UserController {
         return new ResponseEntity<>(loginUser, HttpStatus.OK);
     }
 
+    /*
+     * This method is used to get the user that is currently logged in.
+     * It takes in a HttpSession object.
+     * @Return ResponseEntity<Users> - The user that is currently logged in
+     */
     @GetMapping("session")
     public ResponseEntity<Users> getSessionUser(HttpSession session) {
         Users user = (Users) session.getAttribute("user");
@@ -58,6 +78,11 @@ public class UserController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
+    /*
+     * This method is used to check if the user that is currently logged in is an admin.
+     * It takes in a HttpSession object with a user.
+     * @Return ResponseEntity<Boolean> - True if the user is an admin, false otherwise
+     */
     @GetMapping("admin")
     public ResponseEntity<Boolean> isAdmin(HttpSession session) {
         Users user = (Users) session.getAttribute("user");
@@ -69,6 +94,11 @@ public class UserController {
         return new ResponseEntity<>(user.isAdmin(), HttpStatus.OK);
     }
 
+    /*
+     * This method is used to logout the user that is currently logged in.
+     * It takes in a HttpSession object.
+     * @Return ResponseEntity<Void> - An empty response entity
+     */
     @PostMapping("logout")
     public ResponseEntity<Void> logoutUser(HttpSession session) {
         session.removeAttribute("user");
@@ -76,6 +106,11 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    /*
+     * This method is used to get all the movies that the user has purchased.
+     * It takes in a HttpSession object.
+     * @Return ResponseEntity<List<Movie>> - A list of movies that the user has purchased
+     */
     @GetMapping("/myMovies")
     public ResponseEntity<List<Movie>> getPurchasedMovies(HttpSession session) {
         Users user = (Users) session.getAttribute("user");
@@ -86,6 +121,12 @@ public class UserController {
         return new ResponseEntity<>(movies, HttpStatus.OK);
     }
 
+    /*
+     * This method is used to get all the movies that a user has purchased by the users Id.
+     * It takes in a HttpSession object with a user that must be an admin.
+     * It takes in a int as a path variable that is the id of the user who's movies are being retrieved.
+     * @Return ResponseEntity<List<Movie>> - A list of movies that the user has purchased.
+     */
     @GetMapping("/admin/{id}")
     public ResponseEntity<List<Movie>> getPurchasedMoviesByUserId(HttpSession session, @PathVariable int id) {
         Users admin = (Users) session.getAttribute("user");
@@ -100,6 +141,12 @@ public class UserController {
         return new ResponseEntity<>(movies, HttpStatus.OK);
     }
 
+    /*
+     * This method is used to begin the process of changing a users password.
+     * The method uses the emailService object to send an OTP to the email provided.
+     * It takes in a string as a path variable that is the email of the user whose password is being reset.
+     * @Return ResponseEntity<String> - A response entity with a message that the user should be receiving an email soon.
+     */
     @PostMapping("{email}/forgotPassword")
     public ResponseEntity<String> forgotPassword(@PathVariable String email) {
         Users user;
@@ -123,6 +170,12 @@ public class UserController {
     }
 
     //Reset password using Http sessions and email service
+    /*
+     * This message is used to verify that the OTP provided by the user is correct.
+     * It takes in a string as a path variable that is the email of the user whose password is being reset.
+     * It takes in a int as a path variable that is the OTP that the user provided.
+     * @Return ResponseEntity<?> - A response entity with the user that was verified.
+     */
     @PostMapping(value = "{email}/verifyEmail/{otp}")
     public ResponseEntity<?> verifyEmail(@PathVariable String email, @PathVariable int otp, HttpSession session) {
         Users verifiedUser;
@@ -139,6 +192,12 @@ public class UserController {
         }
     }
 
+    /*
+     * This method is used to reset the password of a user.
+     * It takes in a Users object that contains the new password.
+     * It takes in a HttpSession object that contains the user that is currently logged in.
+     * @Return ResponseEntity<?> - A response entity with the user that was updated.
+     */
     @PatchMapping("resetPassword")
     public ResponseEntity<?> resetPassword(@RequestBody Users user, HttpSession session) {
         Users updatedUser;
@@ -154,6 +213,12 @@ public class UserController {
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
+    /*
+     * This method is used to set a user as an admin.
+     * It takes in a int as a path variable that is the id of the user that is being set as an admin.
+     * It takes in a HttpSession object that contains the user that is currently logged in.
+     * @Return ResponseEntity<?> - A response entity with the user that was updated.
+     */
     @PatchMapping("admin/setAdmin/{id}")
     public ResponseEntity<?> setAdmin(@PathVariable int id, HttpSession session) {
         Users admin = (Users) session.getAttribute("user");
@@ -171,6 +236,12 @@ public class UserController {
 
 
 
+    /*
+     * This method is used to add money to a user's balance.
+     * It takes in a Users object that contains the amount of money to be added.
+     * It takes in a HttpSession object that contains the user that is currently logged in.
+     * @Return ResponseEntity<Users> - A response entity with the user that was updated.
+     */
     @PatchMapping("addMoney")
     public ResponseEntity<Users> addMoneyHandler(HttpSession session, @RequestBody Users userWithMoney) {
         Users user = (Users) session.getAttribute("user");
@@ -186,7 +257,11 @@ public class UserController {
         }
     }
 
-
+    /*
+     * This method is used to get all the users in the database.
+     * It takes in a HttpSession object that contains the user that is currently logged in. This user must be an admin
+     * @Return ResponseEntity<List<Users>> - A response entity with a list of all the users in the database.
+     */
     @GetMapping
     public ResponseEntity<List<Users>> getAllUsers(HttpSession session) {
         Users user = (Users) session.getAttribute("user");
@@ -197,6 +272,12 @@ public class UserController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
+    /*
+     * This method is used to register a new user.
+     * It takes in a Users object that contains the information of the new user.
+     * It takes in a HttpSession object that is updated with the new user that was registered.
+     * @Return ResponseEntity<Users> - A response entity with the user that was registered.
+     */
     @PostMapping("register")
     public ResponseEntity<Users> registerUserHandler(@RequestBody Users user, HttpSession session) {
         Users newUser;
@@ -205,6 +286,10 @@ public class UserController {
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
+    /*
+     * This is an Exception Handler to handle an Invalid Registration Exception.
+     * @Return String - A message that the registration was invalid.
+     */
     @ExceptionHandler(InvalidRegistrationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody String handleInvalidRegistration(InvalidRegistrationException e)
@@ -212,6 +297,10 @@ public class UserController {
         return e.getMessage();
     }
 
+    /*
+     * This is an Exception Handler to handle an Insufficient Funds Exception.
+     * @Return String - A message that the user has insufficient funds.
+     */
     @ExceptionHandler(InsufficientFundsException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody String handleInsufficientFundsException(InsufficientFundsException e)
@@ -219,6 +308,10 @@ public class UserController {
         return e.getMessage();
     }
 
+    /*
+     * This is an Exception Handler to handle an User Already Exists Exception.
+     * @Return String - A message that the user already exists.
+     */
     @ExceptionHandler(UserAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public @ResponseBody String handleUserAlreadyExists(UserAlreadyExistsException e)
@@ -226,23 +319,40 @@ public class UserController {
         return e.getMessage();
     }
 
+    /*
+     * This is an Exception Handler to handle an Invalid Password Exception.
+     * @Return String - A message that the password is invalid.
+     */
     @ExceptionHandler(InvalidPasswordException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody String handleInvalidPasswordException(InvalidPasswordException e) {
         return e.getMessage();
     }
 
+    /*
+     * This is an Exception Handler to handle an Unauthorized Exception.
+     * @Return String - A message that the user is unauthorized.
+     */
     @ExceptionHandler(UnauthorizedException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public @ResponseBody String handleNotAuthorizedException(UnauthorizedException e) {
         return e.getMessage();
     }
 
+    /*
+     * This is an Exception Handler to handle an User Not Found Exception.
+     * @Return String - A message that the user was not found.
+     */
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody String handleUserNotFoundException(UserNotFoundException e) {
         return e.getMessage();
     }
+
+    /*
+     * This is a method to create a random OTP.
+     * @Return int - A random OTP
+     */
     private int createOTP() {
         return (int) (Math.random() * 9000) + 1000;
     }

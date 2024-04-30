@@ -16,8 +16,11 @@ public class Movie {
     int movieId;
     private String name;
     private double price;
+    @Column(length = 3000)
     private String url;
+    @Column(length = 3000)
     private String snapshot;
+    @Column(length = 3000)
     private String description;
 
     @ManyToMany

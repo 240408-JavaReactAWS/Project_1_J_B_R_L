@@ -15,18 +15,34 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+/*
+ * MovieService class for StreamFlix
+ * This class is used to take requests from the controller and perform operations on the movies table.
+ */
 @Service
 public class MovieService {
+    /* movieDAO is the MovieDAO object used to interact with the movies table */
     private final MovieDAO movieDAO;
+    /* userDAO is the UserDAO object used to interact with the users table */
     private final UserDAO userDAO;
 
 
+    /*
+     * Constructor for MovieService
+     * @param movieDAO the MovieDAO object to set
+     * @param userDAO the UserDAO object to set
+     */
     @Autowired
     public MovieService(MovieDAO movieDAO, UserDAO userDAO) {
         this.movieDAO = movieDAO;
         this.userDAO = userDAO;
     }
 
+    /*
+     * Adds a movie to the movies table
+     * @param movie the movie to add
+     * @return the movie added
+     */
     public Movie addMovie(Movie movie) {
 //        Optional<Users> adminOpt = userDAO.findByUsername(username);
 //        if(adminOpt.isEmpty()) {
@@ -59,15 +75,31 @@ public class MovieService {
         return movieDAO.save(movie);
     }
 
+    /*
+     * Gets a movie by id
+     * @param id the id of the movie to get
+     * @return the movie found by id
+     */
     public Movie getMovieById(int id) throws MovieNotFoundException {
         return movieDAO.findById(id).orElseThrow(() -> new MovieNotFoundException("Movie not found!"));
     }
 
+    /*
+     * Gets all movies
+     * @return a list of all movies
+     */
     public List<Movie> getAllMovies() {
         return movieDAO.findAll();
     }
 
 
+    /*
+     * Updates a movie by id
+     * @param movieId the id of the movie to update
+     * @param updatedMovie the updated movie
+     * @param currentUser the current user that must be an admin
+     * @return the updated movie
+     */
     public Movie updateMovie(int movieId, Movie updatedMovie, Users currentUser) throws UnauthorizedException {
         if (!currentUser.isAdmin()) {
             throw new UnauthorizedException("Only admins can update movies.");
@@ -88,6 +120,12 @@ public class MovieService {
         }
     }
 
+    /*
+     * Deletes a movie by id
+     * @param movieId the id of the movie to delete
+     * @param currentUser the current user that must be an admin
+     * @return true if the movie was deleted successfully
+     */
     public boolean deleteMovie(int movieId, Users currentUser) throws UnauthorizedException, MovieNotFoundException {
         if (!currentUser.isAdmin()) {
             throw new UnauthorizedException("Only admins can delete movies.");
@@ -106,6 +144,11 @@ public class MovieService {
         }
     }
 
+    /*
+     * Gets all movies that the user doesn't own
+     * @param username the username of the user
+     * @return a list of movies that the user doesn't own
+     */
     public List<Movie> getUnownedMovies(String username) {
         Users user = userDAO.findByUsername(username).orElseThrow(() -> new UserNotFoundException("This user doesn't exist!"));
         return movieDAO.findDistinctByUserNotContaining(user).orElseThrow(() -> new MovieNotFoundException("You have all the movies!"));
@@ -113,6 +156,12 @@ public class MovieService {
     }
     ///random
 
+    /*
+     * Buys a movie
+     * @param username the username of the user
+     * @param id the id of the movie to buy
+     * @return the movie bought
+     */
     public Movie buyMovie(String username, int id) throws UserNotFoundException, MovieNotFoundException, InsufficientFundsException {
         Users user = userDAO.findByUsername(username).orElseThrow(() -> new UserNotFoundException("This user doesn't exist!"));
         Movie movie = movieDAO.findById(id).orElseThrow(() -> new MovieNotFoundException("Movie not found with id:" + id));

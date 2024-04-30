@@ -18,13 +18,26 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+/*
+ * UserService class for StreamFlix
+ * This class is used to take requests from the controller and perform operations on the users table.
+ */
 @Service
 public class UserService {
+    /* userDAO is the UserDAO object used to interact with the users table */
     private final UserDAO userDAO;
+    /* movieDAO is the MovieDAO object used to interact with the movies table */
     private final MovieDAO movieDAO;
+    /* oneTimePasswordDAO is the OneTimePasswordDAO object used to interact with the one_time_password table */
     private final OneTimePasswordDAO oneTimePasswordDAO;
 
 
+    /*
+     * Constructor for UserService
+     * @param userDAO the UserDAO object to set
+     * @param movieDAO the MovieDAO object to set
+     * @param oneTimePasswordDAO the OneTimePasswordDAO object to set
+     */
     @Autowired
     public UserService(UserDAO userDAO, MovieDAO movieDAO, OneTimePasswordDAO oneTimePasswordDAO) {
         this.userDAO = userDAO;
@@ -33,6 +46,12 @@ public class UserService {
     }
 
 
+    /*
+     * Logs in a user
+     * @param username the username to log in
+     * @param password the password to log in
+     * @return the user logged in
+     */
     public Users loginUser(String username, String password) throws UserNotFoundException, InvalidPasswordException {
         Optional<Users> loginUser = userDAO.findByUsername(username);
 
@@ -46,14 +65,28 @@ public class UserService {
         }
     }
 
+    /*
+     * Finds the user by username
+     * @param username the username to find the user by
+     * @return the user found by username
+     */
     public Optional<Users> findByUsername(String username) {
         return userDAO.findByUsername(username);
     }
 
+    /*
+     * Finds the user by email
+     * @param email the email to find the user by
+     */
     public Users getUserByEmail(String email) {
         return userDAO.findByEmail(email).orElse(null);
     }
 
+    /*
+     * Registers a new user
+     * @param user the user to register
+     * @return the user registered
+     */
     public Users registerUser(Users user) throws InvalidRegistrationException, UserAlreadyExistsException {
         String username = user.getUsername();
         String password = user.getPassword();
@@ -76,19 +109,30 @@ public class UserService {
         else return userDAO.save(user);
     }
 
-    //Returns a list of all users
+    /*
+     * Gets all users
+     * @return a list of all users
+     */
     public List<Users> getAllUsers() {
         return userDAO.findAll();
     }
 
-    //Stores an otp in the database
+    /*
+     * Saves an OTP
+     * @param otp the OTP to save
+     */
     public void saveOTP(OneTimePassword otp) {
         Optional<OneTimePassword> otpRecord = oneTimePasswordDAO.findByUser(otp.getUser());
         otpRecord.ifPresent(oneTimePasswordDAO::delete);
         oneTimePasswordDAO.save(otp);
     }
 
-    //Users can reset their passwords
+    /*
+     * Resets a user's password
+     * @param currentUser the current user
+     * @param userPatch the user object containing the new password
+     * @return the user with the new password
+     */
     public Users resetPassword(Users currentUser, Users userPatch) throws UserNotFoundException, InvalidPasswordException {;
         Optional<Users> userOpt = userDAO.findByUsername(currentUser.getUsername());
         if (userOpt.isEmpty()) {
@@ -102,6 +146,11 @@ public class UserService {
         return userDAO.save(user);
     }
 
+    /*
+     * Gets a movie by User
+     * @param user the user to get the movie by
+     * @return the movie found by user
+     */
     public List<Movie> getMoviesByUser(Users user) {
         return movieDAO.getMoviesByUser(user);
     }
@@ -116,6 +165,11 @@ public class UserService {
     }
 
 
+    /*
+     * Gets a movie by User Id
+     * @param id the id of the user to get the movie by
+     * @return List of the movies found by user id
+     */
     public List<Movie> getMoviesByUserId(int id) throws UserNotFoundException, UnauthorizedException{
 //        Optional<Users> user = userDAO.findByUsername(username);
 //        if (user.isEmpty()) {
@@ -131,6 +185,12 @@ public class UserService {
         return movieDAO.getMoviesByUser(getUser.get());
     }
 
+    /*
+     * Adds money to a users account
+     * @param username the username to add money to
+     * @param amount the amount to add
+     * @return the user with the new balance
+     */
     public Users addMoney(String username, double amount) {
         Users currentUser = userDAO.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found"));
         if (amount < 0.0) {
@@ -140,6 +200,12 @@ public class UserService {
         return userDAO.save(currentUser);
     }
 
+    /*
+     * Verifies an email
+     * @param otp the OTP to verify
+     * @param email the email to verify
+     * @return the user verified
+     */
     public Users verifyEmail(int otp, String email) {
         Users user = userDAO.findByEmail(email).orElse(null);
         if (user == null) {
@@ -157,6 +223,11 @@ public class UserService {
         return user;
     }
 
+    /*
+     * Sets a user as an admin
+     * @param id the id of the user to set as an admin
+     * @return the user set as an admin
+     */
     public Users setAdmin(int id) {
         Optional<Users> user = userDAO.findById(id);
         if (user.isEmpty()) {

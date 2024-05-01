@@ -34,6 +34,7 @@ public class UserService {
 
 
     public Users loginUser(String username, String password) throws UserNotFoundException, InvalidPasswordException {
+        username = username.toLowerCase();
         Optional<Users> loginUser = userDAO.findByUsername(username);
 
         if (loginUser.isEmpty()) {
@@ -58,7 +59,14 @@ public class UserService {
         String username = user.getUsername();
         String password = user.getPassword();
         String email = user.getEmail();
-        if (username == null || password == null)
+        if (username == null) {
+            throw new InvalidRegistrationException("Username must be specified");
+        }
+        if (username.contains(" ")) {
+            throw new InvalidRegistrationException("Username cannot contain spaces");
+        }
+        username = username.toLowerCase();
+        if (password == null)
             throw new InvalidRegistrationException("Unable to register new user:" +
                     username + ". Username and password must be specified.");
         else if (username.length() < 4 || password.length() < 4)

@@ -2,6 +2,7 @@ package com.revature.StreamFlixBackend.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

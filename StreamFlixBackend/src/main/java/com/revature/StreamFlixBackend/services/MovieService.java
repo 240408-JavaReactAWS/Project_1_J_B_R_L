@@ -111,8 +111,9 @@ public class MovieService {
             movie.setName(updatedMovie.getName());
             movie.setPrice(updatedMovie.getPrice());
             movie.setUrl(updatedMovie.getUrl()); // Update url
+            movie.setSnapshot(updatedMovie.getSnapshot()); // Update
             movie.setDescription(updatedMovie.getDescription()); // Update description
-            // Update other fields as needed
+
 
             return movieDAO.save(movie);
         } else {
